@@ -6,20 +6,39 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { login, ApiError } from "@/services/auth.api"
+import { useRouter } from "next/navigation"
 
 type LoginData = {
   email: string
   password: string
 }
 
-export function LoginForm() {
+interface LoginFormProps {
+  onSuccess?: (message: string, userData?: any) => void
+  onError?: (error: string) => void
+  redirectPath?: string
+  source?: "ADMIN" | "USER"
+}
+
+export function LoginForm({ 
+  onSuccess, 
+  onError, 
+  redirectPath = "/dashboard",
+  source = "USER" 
+}: LoginFormProps) {
   const [data, setData] = useState<LoginData>({ email: "", password: "" })
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const router = useRouter()
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = e.target
     setData((d) => ({ ...d, [name]: value }))
+    // Clear error when user starts typing
+    if (error) {
+      setError(null)
+    }
   }
 
   function validate(): string | null {
@@ -38,14 +57,37 @@ export function LoginForm() {
       setError(v)
       return
     }
+    
     setSubmitting(true)
     try {
-      // TODO: Connect to backend API (e.g., POST /api/login) with { email, password }
-      console.log("[login] submitting", { ...data, email: data.email.trim().toLowerCase() })
-      await new Promise((r) => setTimeout(r, 600))
-      // e.g., redirect on success
-    } catch (err: any) {
-      setError(err?.message ?? "Login failed. Please try again.")
+      const response = await login(
+        data.email.trim().toLowerCase(), 
+        data.password,
+        source
+      )
+      
+      // Handle successful login
+      if (onSuccess) {
+        onSuccess(response.message, response.data)
+      }
+      
+      // Redirect to specified path
+      router.push(redirectPath)
+      
+    } catch (err) {
+      let errorMessage = "Login failed. Please try again."
+      
+      if (err instanceof ApiError) {
+        errorMessage = err.message
+      } else if (err instanceof Error) {
+        errorMessage = err.message
+      }
+      
+      setError(errorMessage)
+      
+      if (onError) {
+        onError(errorMessage)
+      }
     } finally {
       setSubmitting(false)
     }

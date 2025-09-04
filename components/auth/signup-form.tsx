@@ -7,8 +7,9 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { register, ApiError } from "@/services/auth.api"
 
-type Role = "student" | "referee" | "school-manager-coach"
+type Role = "STUDENT" | "REFEREE" | "SCHOOL_MANAGER_COACH"
 
 type SignupData = {
   firstName: string
@@ -21,14 +22,19 @@ type SignupData = {
   confirmPassword: string
 }
 
-export function SignupForm() {
+interface SignupFormProps {
+  onSuccess?: (message: string) => void
+  onError?: (error: string) => void
+}
+
+export function SignupForm({ onSuccess, onError }: SignupFormProps) {
   const [data, setData] = useState<SignupData>({
     firstName: "",
     lastName: "",
     phone: "",
     email: "",
     institution: "",
-    role: "student",
+    role: "STUDENT",
     password: "",
     confirmPassword: "",
   })
@@ -38,6 +44,10 @@ export function SignupForm() {
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = e.target
     setData((d) => ({ ...d, [name]: value }))
+    // Clear specific field error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: "" }))
+    }
   }
 
   function validate(): Record<string, string> {
@@ -61,29 +71,77 @@ export function SignupForm() {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
+    console.log("Form submitted, starting validation...")
+    
     const v = validate()
     setErrors(v)
-    if (Object.keys(v).length > 0) return
+    console.log("Validation errors:", v)
+    
+    if (Object.keys(v).length > 0) {
+      console.log("Form has validation errors, stopping submission")
+      return
+    }
 
+    console.log("Starting registration process...")
     setSubmitting(true)
+    
     try {
-      // TODO: Connect to backend API (e.g., POST /api/signup) with the payload below
+      // Prepare payload for backend
       const payload = {
-        firstName: data.firstName.trim(),
-        lastName: data.lastName.trim(),
-        phone: data.phone.trim(),
+        first_name: data.firstName.trim(),
+        last_name: data.lastName.trim(),
+        phone_number: data.phone.trim(),
         email: data.email.trim().toLowerCase(),
-        institution: data.institution.trim(),
-        role: data.role,
         password: data.password,
+        role: data.role,
+        institute_id: data.institution.trim(), // Assuming institution name as ID for now
       }
-      console.log("[signup] submitting", payload)
-      await new Promise((r) => setTimeout(r, 800))
-      // e.g., show success toast or redirect to /login
-    } catch (err: any) {
-      setErrors({ form: "Signup failed. Please try again." })
+
+      console.log("API Base URL:", process.env.NEXT_PUBLIC_API_BASE_URL)
+      console.log("Payload being sent:", payload)
+      console.log("About to call register function...")
+
+      const response = await register(payload)
+      
+      console.log("Registration successful:", response)
+      
+      // Handle successful registration
+      if (onSuccess) {
+        onSuccess(response.message)
+      }
+      
+      // Reset form
+      setData({
+        firstName: "",
+        lastName: "",
+        phone: "",
+        email: "",
+        institution: "",
+        role: "STUDENT",
+        password: "",
+        confirmPassword: "",
+      })
+      
+    } catch (err) {
+      console.error("Registration error:", err)
+      let errorMessage = "Registration failed. Please try again."
+      
+      if (err instanceof ApiError) {
+        errorMessage = err.message
+        console.error("API Error details:", { message: err.message, status: err.status })
+      } else if (err instanceof Error) {
+        errorMessage = err.message
+        console.error("Generic Error:", err.message)
+      }
+      
+      setErrors({ form: errorMessage })
+      
+      if (onError) {
+        onError(errorMessage)
+      }
     } finally {
       setSubmitting(false)
+      console.log("Registration process completed")
     }
   }
 
@@ -187,15 +245,15 @@ export function SignupForm() {
               className="grid gap-2 mt-3"
             >
               <div className="flex items-center gap-2">
-                <RadioGroupItem id="role-student" value="student" className="border-2 border-gray-400 bg-white" />
+                <RadioGroupItem id="role-student" value="STUDENT" className="border-2 border-gray-400 bg-white" />
                 <Label htmlFor="role-student">Student</Label>
               </div>
               <div className="flex items-center gap-2">
-                <RadioGroupItem id="role-referee" value="referee" className="border-2 border-gray-400 bg-white" />
+                <RadioGroupItem id="role-referee" value="REFEREE" className="border-2 border-gray-400 bg-white" />
                 <Label htmlFor="role-referee">Referee</Label>
               </div>
               <div className="flex items-center gap-2">
-                <RadioGroupItem id="role-mgr" value="school-manager-coach" className="border-2 border-gray-400 bg-white" />
+                <RadioGroupItem id="role-mgr" value="SCHOOL_MANAGER_COACH" className="border-2 border-gray-400 bg-white" />
                 <Label htmlFor="role-mgr">School Manager/Coach</Label>
               </div>
             </RadioGroup>
