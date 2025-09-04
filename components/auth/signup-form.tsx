@@ -249,7 +249,7 @@ export function SignupForm({ onSuccess, onError }: SignupFormProps) {
                 <Label htmlFor="role-student">Student</Label>
               </div>
               <div className="flex items-center gap-2">
-                <RadioGroupItem id="role-referee" value="REFEREE" className="border-2 border-gray-400 bg-white" />
+                <RadioGroupItem id="role-referee" value="REFEREE"className="border-2 border-gray-400 bg-white" />
                 <Label htmlFor="role-referee">Referee</Label>
               </div>
               <div className="flex items-center gap-2">
