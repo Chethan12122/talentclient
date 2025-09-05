@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { register, ApiError } from "@/services/auth.api"
 
-type Role = "STUDENT" | "REFEREE" | "SCHOOL_MANAGER_COACH"
+type Role = "ATHLETE" | "REFEREE" | "TEAM MANAGER"
 
 type SignupData = {
   firstName: string
@@ -34,7 +34,7 @@ export function SignupForm({ onSuccess, onError }: SignupFormProps) {
     phone: "",
     email: "",
     institution: "",
-    role: "STUDENT",
+    role: "ATHLETE",
     password: "",
     confirmPassword: "",
   })
@@ -117,7 +117,7 @@ export function SignupForm({ onSuccess, onError }: SignupFormProps) {
         phone: "",
         email: "",
         institution: "",
-        role: "STUDENT",
+        role: "ATHLETE",
         password: "",
         confirmPassword: "",
       })
@@ -198,7 +198,7 @@ export function SignupForm({ onSuccess, onError }: SignupFormProps) {
               name="phone"
               type="tel"
               inputMode="tel"
-              placeholder="+91 555 123 4567"
+              placeholder="+919825674567"
               value={data.phone}
               onChange={handleChange}
               required
@@ -245,16 +245,16 @@ export function SignupForm({ onSuccess, onError }: SignupFormProps) {
               className="grid gap-2 mt-3"
             >
               <div className="flex items-center gap-2">
-                <RadioGroupItem id="role-student" value="STUDENT" className="border-2 border-gray-400 bg-white" />
-                <Label htmlFor="role-student">Student</Label>
+                <RadioGroupItem id="role-athlete" value="ATHLETE" className="border-2 border-gray-400 bg-white" />
+                <Label htmlFor="role-athlete">Athlete</Label>
               </div>
               <div className="flex items-center gap-2">
-                <RadioGroupItem id="role-referee" value="REFEREE"className="border-2 border-gray-400 bg-white" />
+                <RadioGroupItem id="role-referee" value="REFEREE" className="border-2 border-gray-400 bg-white" />
                 <Label htmlFor="role-referee">Referee</Label>
               </div>
               <div className="flex items-center gap-2">
-                <RadioGroupItem id="role-mgr" value="SCHOOL_MANAGER_COACH" className="border-2 border-gray-400 bg-white" />
-                <Label htmlFor="role-mgr">School Manager/Coach</Label>
+                <RadioGroupItem id="role-mgr" value="TEAM MANAGER" className="border-2 border-gray-400 bg-white" />
+                <Label htmlFor="role-mgr">TEAM MANAGER</Label>
               </div>
             </RadioGroup>
           </fieldset>

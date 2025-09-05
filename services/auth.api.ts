@@ -8,7 +8,7 @@ export interface RegisterRequest {
   phone_number: string;
   email: string;
   password: string;
-  role: "STUDENT" | "REFEREE" | "SCHOOL_MANAGER_COACH";
+  role: "ATHLETE" | "REFEREE" | "TEAM MANAGER";
   institute_id: string;
 }
 
