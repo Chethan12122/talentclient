@@ -60,7 +60,12 @@
     "sonner": "^1.7.4",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
-    "zod": "3.25.67"
+    "zod": "3.25.67",
+    "html5-qrcode": "^2.3.8",
+    "immer": "latest",
+    "use-sync-external-store": "latest",
+    "vaul": "^1.1.2",
+    "zustand": "latest"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.9",
