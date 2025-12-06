@@ -14,11 +14,9 @@ export function QRScanner({ onDetected }: Props) {
   const [manual, setManual] = useState("")
 
   useEffect(() => {
-    const scanner = new Html5QrcodeScanner(
-      "qr-reader", 
-      { fps: 10, qrbox: { width: 250, height: 250 } },
-      false
-    )
+    const scanner = new Html5QrcodeScanner("qr-reader", { fps: 10, qrbox: { width: 180, height: 180 } }, false)
+
+    
     
     scanner.render(
       (decodedText) => {
@@ -47,28 +45,24 @@ export function QRScanner({ onDetected }: Props) {
 
 return (
   <div className="grid gap-3 sm:gap-4">
-    {/* Bulletproof Responsive QR Scanner */}
-    <div className="w-full rounded-2xl border-2 border-dashed border-muted-foreground/40 bg-gradient-to-br from-muted/50 to-background p-2 sm:p-3 shadow-md">
-      <div className="w-full max-w-[90vw] mx-auto aspect-[4/3] rounded-xl bg-black/10 border-2 border-dashed border-white/20 overflow-hidden">
-        <div 
-          id="qr-reader" 
-          className="w-full h-[240px] sm:h-[320px] md:h-[380px] rounded-xl bg-black/20"
-          style={{ 
-            minHeight: '240px',
-            maxHeight: '90vh'
-          }}
+    {/* Minimal QR reader – no outer camera screen */}
+    <div className="w-full flex justify-center">
+      <div className="w-full max-w-[320px] sm:max-w-[360px]">
+        <div
+          id="qr-reader"
+          className="w-full"
         />
       </div>
     </div>
-    
-    {/* Responsive Status */}
+
+    {/* Status (optional, keep or style as you like) */}
     <div className="p-3 sm:p-4 bg-gradient-to-r from-primary/10 to-primary/5 border rounded-xl text-center shadow-sm">
       <div className="text-sm sm:text-base md:text-lg font-semibold text-primary-foreground mb-1">
         {status === "starting" ? "🔄 Initializing scanner..." : 
          status === "scanning" ? "📷 Ready to scan QR code" : "⏸️ Scanner paused"}
       </div>
       <div className="text-xs sm:text-sm text-muted-foreground">
-        {status === "scanning" ? "Hold QR code steady • 10-30cm away" : "Allow camera access to start"}
+        {status === "scanning" ? "Hold QR code steady • 10–30 cm away" : "Allow camera access to start"}
       </div>
     </div>
 
@@ -78,7 +72,7 @@ return (
       </div>
     )}
 
-    {/* Responsive Manual Input */}
+    {/* Manual input – unchanged */}
     <div className="grid gap-2 p-3 sm:p-4 bg-muted/20 rounded-xl border">
       <div className="text-xs sm:text-sm font-semibold flex flex-col sm:flex-row sm:items-center sm:gap-2 text-muted-foreground">
         <span>OR enter athlete ID manually</span>
