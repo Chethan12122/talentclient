@@ -14,7 +14,11 @@ export function QRScanner({ onDetected }: Props) {
   const [manual, setManual] = useState("")
 
   useEffect(() => {
-    const scanner = new Html5QrcodeScanner("qr-reader", { fps: 10, qrbox: { width: 180, height: 180 } }, false)
+    const scanner = new Html5QrcodeScanner(
+      "qr-reader", 
+      { fps: 10, qrbox: { width: 250, height: 250 } },
+      false
+    )
 
     
     
