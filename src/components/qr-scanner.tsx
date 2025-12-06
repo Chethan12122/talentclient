@@ -13,69 +13,77 @@ export function QRScanner({ onDetected }: Props) {
   const [manual, setManual] = useState("")
 
   useEffect(() => {
-    let stream: MediaStream | null = null
-    let stopped = false
-    async function init() {
-      try {
-        // @ts-expect-error - BarcodeDetector may be experimental
-        const hasDetector = typeof window !== "undefined" && window.BarcodeDetector
-        if (!hasDetector) {
-          setSupported(false)
-          return
-        }
-        setSupported(true)
-        // @ts-expect-error
-        const detector = new window.BarcodeDetector({ formats: ["qr_code"] })
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { ideal: "environment" } },  // ← UPDATED
-          audio: false,
-        })
-        if (!videoRef.current) return
-        videoRef.current.srcObject = stream
-        await videoRef.current.play()
+  let stream: MediaStream | null = null
+  let stopped = false
+  async function init() {
+    try {
+      console.log("🔍 QRScanner: Starting camera...")
+      
+      // ✅ ALWAYS try camera FIRST (works on laptop/mobile)
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: "environment" } },
+        audio: false,
+      })
+      
+      if (!videoRef.current) return
+      videoRef.current.srcObject = stream
+      await videoRef.current.play()
+      console.log("✅ QRScanner: Camera stream active")
+      
+      // NOW check BarcodeDetector (optional)
+      const hasDetector = typeof window !== "undefined" && window.BarcodeDetector
+      if (!hasDetector) {
+        console.log("⚠️ QRScanner: No BarcodeDetector, camera preview only")
+        setSupported(false)  // Manual input available, but SHOWS camera video
+        return
+      }
+      
+      setSupported(true)
+      // @ts-expect-error
+      const detector = new window.BarcodeDetector({ formats: ["qr_code"] })
+      
+      const track = stream.getVideoTracks()[0]
+      const imageCapture = "ImageCapture" in window ? new (window as any).ImageCapture(track) : null
 
-        const track = stream.getVideoTracks()[0]
-        const imageCapture = "ImageCapture" in window ? new (window as any).ImageCapture(track) : null
-
-        async function tick() {
-          if (stopped) return
-          try {
-            let bitmap: ImageBitmap | null = null
-            if (imageCapture && imageCapture.grabFrame) {
-              bitmap = await imageCapture.grabFrame()
-            } else if (videoRef.current) {
-              // Fallback: create ImageBitmap from video element
-              // @ts-ignore
-              bitmap = await createImageBitmap(videoRef.current)
-            }
-            if (bitmap) {
-              const codes = await detector.detect(bitmap)
-              if (codes && codes[0]?.rawValue) {
-                onDetected(codes[0].rawValue)
-              }
-              bitmap.close?.()
-            }
-          } catch (e) {
-            // non-fatal
-          } finally {
-            setTimeout(tick, 350)
+      async function tick() {
+        if (stopped) return
+        try {
+          let bitmap: ImageBitmap | null = null
+          if (imageCapture && imageCapture.grabFrame) {
+            bitmap = await imageCapture.grabFrame()
+          } else if (videoRef.current) {
+            // @ts-ignore
+            bitmap = await createImageBitmap(videoRef.current)
           }
+          if (bitmap) {
+            const codes = await detector.detect(bitmap)
+            if (codes && codes[0]?.rawValue) {
+              onDetected(codes[0].rawValue)
+            }
+            bitmap.close?.()
+          }
+        } catch (e) {
+          // non-fatal
+        } finally {
+          setTimeout(tick, 350)
         }
-        tick()
-      } catch (e: any) {
-        console.error("Camera error:", e)  // ← ADDED: Better logging
-        setError(e?.message || "Camera access failed")
-        setSupported(false)  // ← ADDED: Fallback to manual input
       }
+      tick()
+      
+    } catch (e: any) {
+      console.error("❌ QRScanner Camera error:", e.name, e.message)
+      setError(e?.message || "Camera access failed")
     }
-    init()
-    return () => {
-      stopped = true
-      if (stream) {
-        stream.getTracks().forEach((t) => t.stop())
-      }
+  }
+  init()
+  return () => {
+    stopped = true
+    if (stream) {
+      stream.getTracks().forEach((t) => t.stop())
     }
-  }, [onDetected])
+  }
+}, [onDetected])
+
 
   return (
     <div className="grid gap-3">
