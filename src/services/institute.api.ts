@@ -1,4 +1,4 @@
-import { ApiError } from "@/services/auth.api";
+import { ApiError } from "@/types/auth.types";
 
 export async function fetchInstitutes() {
   if (!process.env.NEXT_PUBLIC_API_BASE_URL) {

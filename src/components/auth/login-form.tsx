@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { login, getDashboardPath, ApiError, extractUserRoleFromResponse } from "@/services/auth.api"
+import { login, getDashboardPath, extractUserRoleFromResponse } from "@/services/auth.api"
+import { ApiError } from "@/types/auth.types";
 
 type LoginData = {
   email: string
@@ -81,7 +82,22 @@ if (!UserRole || !["ATHLETE", "REFEREE", "TEAM MANAGER"].includes(UserRole)) {
 
 // Manually ensure cookies are set (backup)
 document.cookie = `user_role=${UserRole}; path=/; max-age=${60 * 60 * 24}; SameSite=Strict`;
-document.cookie = `access_token=${response.data.access_token}; path=/; max-age=${60 * 60 * 24}; SameSite=Strict`;
+
+// Get token from the correct location in response
+const accessToken = response.data?.session?.access_token || response.data.access_token;
+if (accessToken) {
+  document.cookie = `access_token=${accessToken}; path=/; max-age=${60 * 60 * 24}; SameSite=Strict`;
+  console.log("🔑 Access token stored");
+} else {
+  console.error("❌ No access token found in response:", response.data);
+}
+
+// Store user_id from user_details
+const userId = response.data?.user_details?.[0]?.user_id;
+if (userId) {
+  document.cookie = `user_id=${userId}; path=/; max-age=${60 * 60 * 24}; SameSite=Strict`;
+  console.log("🔑 User ID stored:", userId);
+}
 
 console.log("🍪 Cookies set manually as backup");
 

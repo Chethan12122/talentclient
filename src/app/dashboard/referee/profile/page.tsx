@@ -1,51 +1,81 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
-import { User, Mail, Phone, MapPin, Calendar, Flag, Edit, Save, X, Award } from "lucide-react"
+import { User, Mail, Phone, Flag, Loader2 } from "lucide-react"
+import { getUserById } from "@/services/user.api"
+import { getCookie } from "cookies-next"
+import type { User as UserType } from "@/types/user"
 
 export default function RefereeProfile() {
-  const [isEditing, setIsEditing] = useState(false)
-  const [profile, setProfile] = useState({
-    firstName: "Michael",
-    lastName: "Davis",
-    email: "referee@test.com",
-    phone: "+1 (555) 456-7890",
-    address: "456 Sports Lane, Metro City, ST 54321",
-    dateOfBirth: "1985-08-22",
-    licenseNumber: "REF-2024-001234",
-    licenseLevel: "Level 3 Certified",
-    yearsExperience: 8,
-    specializations: ["Track & Field", "Swimming", "Basketball"],
-    bio: "Experienced referee with 8 years of officiating at high school and collegiate levels. Committed to fair play and maintaining the integrity of competitive sports.",
-    certifications: [
-      "USA Track & Field Official",
-      "Swimming Officials Association",
-      "Basketball Referees Association",
-      "First Aid/CPR Certified",
-    ],
-    availability: {
-      weekdays: true,
-      weekends: true,
-      evenings: true,
-    },
-    rating: 4.8,
-    totalMatches: 247,
-  })
-
-  const handleSave = () => {
-    // TODO: Save profile data to backend
-    setIsEditing(false)
+  const [loading, setLoading] = useState(true)
+  const [userData, setUserData] = useState<UserType | null>(null)
+  
+  useEffect(() => {
+    async function fetchProfile() {
+      try {
+        const userId = getCookie("user_id") as string
+        const accessToken = getCookie("access_token") as string
+        
+        console.log("Profile fetch - User ID:", userId)
+        console.log("Profile fetch - Access Token exists:", !!accessToken)
+        
+        if (!userId) {
+          console.error("No user ID found")
+          setLoading(false)
+          return
+        }
+        
+        if (!accessToken) {
+          console.error("No access token found - user needs to login")
+          // Redirect to login if no token
+          window.location.href = '/authpage/login'
+          return
+        }
+        
+        const response = await getUserById(userId)
+        if (response.data && response.data.length > 0) {
+          setUserData(response.data[0])
+        }
+      } catch (error) {
+        console.error("Error fetching profile:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    
+    fetchProfile()
+  }, [])
+  
+  const profile = userData ? {
+    firstName: userData.first_name || "",
+    lastName: userData.last_name || "",
+    email: userData.email || "",
+    phone: userData.phone_number || "",
+    specializations: userData.game_categories || [],
+  } : {
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    specializations: [],
   }
 
-  const handleCancel = () => {
-    // TODO: Reset form data
-    setIsEditing(false)
+
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading profile...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -53,25 +83,8 @@ export default function RefereeProfile() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Referee Profile</h2>
-          <p className="text-muted-foreground">Manage your officiating credentials and availability</p>
+          <p className="text-muted-foreground">Your officiating credentials and information</p>
         </div>
-        {!isEditing ? (
-          <Button onClick={() => setIsEditing(true)} className="gap-2">
-            <Edit className="h-4 w-4" />
-            Edit Profile
-          </Button>
-        ) : (
-          <div className="flex gap-2">
-            <Button onClick={handleSave} className="gap-2">
-              <Save className="h-4 w-4" />
-              Save
-            </Button>
-            <Button variant="outline" onClick={handleCancel} className="gap-2 bg-transparent">
-              <X className="h-4 w-4" />
-              Cancel
-            </Button>
-          </div>
-        )}
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
@@ -86,27 +99,11 @@ export default function RefereeProfile() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="firstName">First Name</Label>
-                {isEditing ? (
-                  <Input
-                    id="firstName"
-                    value={profile.firstName}
-                    onChange={(e) => setProfile({ ...profile, firstName: e.target.value })}
-                  />
-                ) : (
-                  <p className="text-sm">{profile.firstName}</p>
-                )}
+                <p className="text-sm">{profile.firstName}</p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="lastName">Last Name</Label>
-                {isEditing ? (
-                  <Input
-                    id="lastName"
-                    value={profile.lastName}
-                    onChange={(e) => setProfile({ ...profile, lastName: e.target.value })}
-                  />
-                ) : (
-                  <p className="text-sm">{profile.lastName}</p>
-                )}
+                <p className="text-sm">{profile.lastName}</p>
               </div>
             </div>
 
@@ -115,15 +112,7 @@ export default function RefereeProfile() {
                 <Mail className="h-4 w-4" />
                 Email
               </Label>
-              {isEditing ? (
-                <Input
-                  type="email"
-                  value={profile.email}
-                  onChange={(e) => setProfile({ ...profile, email: e.target.value })}
-                />
-              ) : (
-                <p className="text-sm">{profile.email}</p>
-              )}
+              <p className="text-sm">{profile.email}</p>
             </div>
 
             <div className="space-y-2">
@@ -131,48 +120,9 @@ export default function RefereeProfile() {
                 <Phone className="h-4 w-4" />
                 Phone
               </Label>
-              {isEditing ? (
-                <Input
-                  type="tel"
-                  value={profile.phone}
-                  onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
-                />
-              ) : (
-                <p className="text-sm">{profile.phone}</p>
-              )}
+              <p className="text-sm">{profile.phone}</p>
             </div>
 
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                <MapPin className="h-4 w-4" />
-                Address
-              </Label>
-              {isEditing ? (
-                <Textarea
-                  value={profile.address}
-                  onChange={(e) => setProfile({ ...profile, address: e.target.value })}
-                  rows={2}
-                />
-              ) : (
-                <p className="text-sm">{profile.address}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
-                Date of Birth
-              </Label>
-              {isEditing ? (
-                <Input
-                  type="date"
-                  value={profile.dateOfBirth}
-                  onChange={(e) => setProfile({ ...profile, dateOfBirth: e.target.value })}
-                />
-              ) : (
-                <p className="text-sm">{new Date(profile.dateOfBirth).toLocaleDateString()}</p>
-              )}
-            </div>
           </CardContent>
         </Card>
 
@@ -185,107 +135,36 @@ export default function RefereeProfile() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label>License Number</Label>
-              {isEditing ? (
-                <Input
-                  value={profile.licenseNumber}
-                  onChange={(e) => setProfile({ ...profile, licenseNumber: e.target.value })}
-                />
-              ) : (
-                <p className="text-sm font-mono">{profile.licenseNumber}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label>License Level</Label>
-              {isEditing ? (
-                <Input
-                  value={profile.licenseLevel}
-                  onChange={(e) => setProfile({ ...profile, licenseLevel: e.target.value })}
-                />
-              ) : (
-                <Badge variant="secondary">{profile.licenseLevel}</Badge>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label>Years of Experience</Label>
-              {isEditing ? (
-                <Input
-                  type="number"
-                  value={profile.yearsExperience}
-                  onChange={(e) => setProfile({ ...profile, yearsExperience: Number.parseInt(e.target.value) })}
-                />
-              ) : (
-                <p className="text-sm">{profile.yearsExperience} years</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label>Specializations</Label>
+              <Label>Game Categories</Label>
               <div className="flex flex-wrap gap-2">
                 {profile.specializations.map((spec, index) => (
                   <Badge key={index} variant="outline">
                     {spec}
                   </Badge>
                 ))}
+                {profile.specializations.length === 0 && (
+                  <p className="text-sm text-muted-foreground">No specializations listed</p>
+                )}
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label>Bio</Label>
-              {isEditing ? (
-                <Textarea
-                  value={profile.bio}
-                  onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
-                  rows={4}
-                />
-              ) : (
-                <p className="text-sm">{profile.bio}</p>
-              )}
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Rating</Label>
-                <div className="flex items-center gap-2">
-                  <Badge variant="secondary" className="text-lg px-3 py-1">
-                    {profile.rating}/5.0
-                  </Badge>
+            {userData && (
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Matches Officiated</Label>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary" className="text-lg px-3 py-1">
+                      {userData.matches_officiated || 0}
+                    </Badge>
+                  </div>
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label>Total Matches</Label>
-                <div className="flex items-center gap-2">
-                  <Badge variant="secondary" className="text-lg px-3 py-1">
-                    {profile.totalMatches}
-                  </Badge>
-                </div>
-              </div>
-            </div>
+            )}
           </CardContent>
         </Card>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Award className="h-5 w-5" />
-            Certifications & Credentials
-          </CardTitle>
-          <CardDescription>Your current officiating certifications</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-2 md:grid-cols-2">
-            {profile.certifications.map((cert, index) => (
-              <div key={index} className="flex items-center gap-2 p-3 rounded-lg bg-muted/50">
-                <Award className="h-4 w-4 text-green-500" />
-                <span className="text-sm font-medium">{cert}</span>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
     </div>
   )
 }
+

@@ -8,23 +8,18 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { register, ApiError } from "@/services/auth.api"
+import { register } from "@/services/auth.api"
 import { fetchInstitutes } from "@/services/institute.api"
+import { ApiError } from "@/types/auth.types"
+import { useRouter } from "next/navigation"
 
 type Role = "ATHLETE" | "REFEREE" | "TEAM MANAGER"
 
 type Institute = {
   institute_id: string
   name: string
-  venue: string
-  created_at: string
-  updated_at: string
-  venue_details: {
-    id: string
-    name: string
-    created_at: string
-    updated_at: string
-  }
+  district_id: string
+  district_details: { id: string; name: string }
 }
 
 type SignupData = {
@@ -32,10 +27,10 @@ type SignupData = {
   lastName: string
   phone: string
   email: string
-  institution: string
-  role: Role
+  institution: string // institute_id
   password: string
   confirmPassword: string
+  role: Role
 }
 
 interface SignupFormProps {
@@ -44,30 +39,34 @@ interface SignupFormProps {
 }
 
 export function SignupForm({ onSuccess, onError }: SignupFormProps) {
+  const router = useRouter()
   const [data, setData] = useState<SignupData>({
     firstName: "",
     lastName: "",
     phone: "",
     email: "",
     institution: "",
-    role: "ATHLETE",
     password: "",
     confirmPassword: "",
+    role: "ATHLETE",
   })
   const [submitting, setSubmitting] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [institutes, setInstitutes] = useState<Institute[]>([])
   const [loadingInstitutes, setLoadingInstitutes] = useState(true)
 
-  // Fetch institutes on component mount
   useEffect(() => {
     async function loadInstitutes() {
       try {
         setLoadingInstitutes(true)
         const result = await fetchInstitutes()
-        setInstitutes(result.data)
+        const uniqueInstitutes = result.data.reduce((acc: Institute[], current: Institute) => {
+          const isDuplicate = acc.find(item => item.institute_id === current.institute_id)
+          if (!isDuplicate) acc.push(current)
+          return acc
+        }, [])
+        setInstitutes(uniqueInstitutes)
       } catch (err) {
-        console.error("Error fetching institutes:", err)
         if (err instanceof ApiError) {
           setErrors(prev => ({ ...prev, institutes: err.message }))
         } else {
@@ -77,25 +76,18 @@ export function SignupForm({ onSuccess, onError }: SignupFormProps) {
         setLoadingInstitutes(false)
       }
     }
-
     loadInstitutes()
   }, [])
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = e.target
     setData((d) => ({ ...d, [name]: value }))
-    // Clear specific field error when user starts typing
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: "" }))
-    }
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: "" }))
   }
 
-  function handleSelectChange(value: string) {
-    setData((d) => ({ ...d, institution: value }))
-    // Clear institution error when user selects
-    if (errors.institution) {
-      setErrors(prev => ({ ...prev, institution: "" }))
-    }
+  function handleInstitutionChange(value: string) {
+    setData((prev) => ({ ...prev, institution: value }))
+    if (errors.institution) setErrors(prev => ({ ...prev, institution: "" }))
   }
 
   function validate(): Record<string, string> {
@@ -104,7 +96,7 @@ export function SignupForm({ onSuccess, onError }: SignupFormProps) {
     if (!data.lastName.trim()) e.lastName = "Last name is required."
     if (!data.phone.trim()) {
       e.phone = "Phone number is required."
-    } else if (!/^\d{10}$/.test(data.phone)) { // Updated regex for exactly 10 digits
+    } else if (!/^\d{10}$/.test(data.phone)) {
       e.phone = "Enter a valid 10-digit phone number."
     }
     if (!data.email.trim()) e.email = "Email is required."
@@ -119,100 +111,67 @@ export function SignupForm({ onSuccess, onError }: SignupFormProps) {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
-    console.log("Form submitted, starting validation...")
-    
     const v = validate()
     setErrors(v)
-    console.log("Validation errors:", v)
-    
-    if (Object.keys(v).length > 0) {
-      console.log("Form has validation errors, stopping submission")
-      return
-    }
-
-    console.log("Starting registration process...")
+    if (Object.keys(v).length > 0) return
     setSubmitting(true)
-    
     try {
-      // Prepare payload for backend - using institute name as name
+      const selectedInstitute = institutes.find(i => i.institute_id === data.institution)
+      if (!selectedInstitute) {
+        setErrors({ form: "Invalid institution selected" })
+        setSubmitting(false)
+        return
+      }
       const payload = {
         first_name: data.firstName.trim(),
         last_name: data.lastName.trim(),
-        phone_number: `+91${data.phone.trim()}`, // Prepend +91 to the 10-digit number
+        phone_number: `+91${data.phone.trim()}`,
         email: data.email.trim().toLowerCase(),
         password: data.password,
         role: data.role,
-        name: data.institution.trim(), // Send institute name as 'name'
+        institute_id: selectedInstitute.institute_id,
+        district_id: selectedInstitute.district_id,
       }
-
-      console.log("API Base URL:", process.env.NEXT_PUBLIC_API_BASE_URL)
-      console.log("Payload being sent:", payload)
-      console.log("About to call register function...")
 
       const response = await register(payload)
-      
-      console.log("Registration successful:", response)
-      
-      // Handle successful registration
-      if (onSuccess) {
-        onSuccess(response.message)
-      }
-      
-      // Reset form
+      if (onSuccess) onSuccess(response.message)
+
       setData({
         firstName: "",
         lastName: "",
         phone: "",
         email: "",
         institution: "",
-        role: "ATHLETE",
         password: "",
         confirmPassword: "",
+        role: "ATHLETE",
       })
-      
+      router.push("/authpage/login")
     } catch (err) {
-      console.error("Registration error:", err)
       let errorMessage = "Registration failed. Please try again."
-      
-      if (err instanceof ApiError) {
-        errorMessage = err.message
-        console.error("API Error details:", { message: err.message, status: err.status })
-      } else if (err instanceof Error) {
-        errorMessage = err.message
-        console.error("Generic Error:", err.message)
-      }
-      
+      if (err instanceof ApiError) errorMessage = err.message
+      else if (err instanceof Error) errorMessage = err.message
       setErrors({ form: errorMessage })
-      
-      if (onError) {
-        onError(errorMessage)
-      }
+      if (onError) onError(errorMessage)
     } finally {
       setSubmitting(false)
-      console.log("Registration process completed")
     }
   }
 
   return (
     <Card className="border">
       <CardHeader>
-        <CardTitle className="text-balance">Create your account</CardTitle>
-        <CardDescription className="text-pretty">Fill in your details to get started.</CardDescription>
+        <CardTitle>Create your account</CardTitle>
+        <CardDescription>Fill in your details to get started.</CardDescription>
       </CardHeader>
-      <div onSubmit={onSubmit}>
+      <form onSubmit={onSubmit}>
         <CardContent className="grid gap-4">
-          {errors.form ? (
-            <p className="text-sm text-destructive" role="alert">
-              {errors.form}
-            </p>
-          ) : null}
-
-          {errors.institutes ? (
-            <p className="text-sm text-orange-600" role="alert">
-              {errors.institutes}
-            </p>
-          ) : null}
-
+          {errors.form && (
+            <p className="text-sm text-destructive" role="alert">{errors.form}</p>
+          )}
+          {errors.institutes && (
+            <p className="text-sm text-orange-600" role="alert">{errors.institutes}</p>
+          )}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="grid gap-2">
               <Label htmlFor="firstName">First name</Label>
@@ -220,33 +179,29 @@ export function SignupForm({ onSuccess, onError }: SignupFormProps) {
                 id="firstName"
                 name="firstName"
                 autoComplete="given-name"
-                placeholder=""
                 value={data.firstName}
                 onChange={handleChange}
                 required
                 aria-invalid={!!errors.firstName}
               />
-              {errors.firstName ? <p className="text-xs text-destructive">{errors.firstName}</p> : null}
+              {errors.firstName && <p className="text-xs text-destructive">{errors.firstName}</p>}
             </div>
-
             <div className="grid gap-2">
               <Label htmlFor="lastName">Last name</Label>
               <Input
                 id="lastName"
                 name="lastName"
                 autoComplete="family-name"
-                placeholder=""
                 value={data.lastName}
                 onChange={handleChange}
                 required
                 aria-invalid={!!errors.lastName}
               />
-              {errors.lastName ? <p className="text-xs text-destructive">{errors.lastName}</p> : null}
+              {errors.lastName && <p className="text-xs text-destructive">{errors.lastName}</p>}
             </div>
           </div>
-
           <div className="grid gap-2">
-            <Label htmlFor="phoneNumber">Phone number</Label>
+            <Label htmlFor="phone">Phone number</Label>
             <div className="flex items-center relative">
               <span className="absolute left-2 text-muted-foreground text-sm">+91</span>
               <Input
@@ -261,12 +216,11 @@ export function SignupForm({ onSuccess, onError }: SignupFormProps) {
                 maxLength={10}
                 required
                 aria-invalid={!!errors.phone}
-                className="pl-10" // Add padding to make space for the prefix
+                className="pl-10"
               />
             </div>
-            {errors.phone ? <p className="text-xs text-destructive">{errors.phone}</p> : null}
+            {errors.phone && <p className="text-xs text-destructive">{errors.phone}</p>}
           </div>
-
           <div className="grid gap-2">
             <Label htmlFor="email">Email</Label>
             <Input
@@ -280,34 +234,37 @@ export function SignupForm({ onSuccess, onError }: SignupFormProps) {
               required
               aria-invalid={!!errors.email}
             />
-            {errors.email ? <p className="text-xs text-destructive">{errors.email}</p> : null}
+            {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
           </div>
-
+          {/* Institute dropdown includes district */}
           <div className="grid gap-2">
             <Label htmlFor="institution">Institution</Label>
-            <Select 
-              value={data.institution} 
-              onValueChange={handleSelectChange}
+            <Select
+              value={data.institution}
+              onValueChange={handleInstitutionChange}
               disabled={loadingInstitutes}
             >
-              <SelectTrigger className={`${errors.institution ? 'border-destructive' : ''}`}>
-                <SelectValue 
-                  placeholder={loadingInstitutes ? "Loading institutes..." : "Select your institution"} 
+              <SelectTrigger className={errors.institution ? 'border-destructive' : ''}>
+                <SelectValue
+                  placeholder={loadingInstitutes ? "Loading..." : "Select institution"}
                 />
               </SelectTrigger>
               <SelectContent>
                 {institutes.map((institute) => (
-                  <SelectItem key={institute.institute_id} value={institute.name}>
-                    {institute.name}
+                  <SelectItem
+                    key={institute.institute_id}
+                    value={institute.institute_id}
+                  >
+                    {institute.name} &mdash; {institute.district_details.name}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            {errors.institution ? <p className="text-xs text-destructive">{errors.institution}</p> : null}
+            {errors.institution && <p className="text-xs text-destructive">{errors.institution}</p>}
           </div>
-
-          <fieldset className="grid gap-3 ">
-            <legend className="text-sm font-medium ">Role</legend>
+          {/* Role selection */}
+          <fieldset className="grid gap-3">
+            <legend className="text-sm font-medium">Role</legend>
             <RadioGroup
               value={data.role}
               onValueChange={(v: Role) => setData((d) => ({ ...d, role: v }))}
@@ -327,7 +284,6 @@ export function SignupForm({ onSuccess, onError }: SignupFormProps) {
               </div>
             </RadioGroup>
           </fieldset>
-
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="grid gap-2">
               <Label htmlFor="password">Password</Label>
@@ -342,9 +298,8 @@ export function SignupForm({ onSuccess, onError }: SignupFormProps) {
                 minLength={8}
                 aria-invalid={!!errors.password}
               />
-              {errors.password ? <p className="text-xs text-destructive">{errors.password}</p> : null}
+              {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
             </div>
-
             <div className="grid gap-2">
               <Label htmlFor="confirmPassword">Confirm password</Label>
               <Input
@@ -357,17 +312,16 @@ export function SignupForm({ onSuccess, onError }: SignupFormProps) {
                 required
                 aria-invalid={!!errors.confirmPassword}
               />
-              {errors.confirmPassword ? <p className="text-xs text-destructive">{errors.confirmPassword}</p> : null}
+              {errors.confirmPassword && <p className="text-xs text-destructive">{errors.confirmPassword}</p>}
             </div>
           </div>
         </CardContent>
-
         <CardFooter className="flex-col items-stretch gap-2 mt-4">
-          <Button type="submit" onClick={onSubmit} disabled={submitting || loadingInstitutes}>
+          <Button type="submit" disabled={submitting || loadingInstitutes}>
             {submitting ? "Creating account..." : "Create Account"}
           </Button>
         </CardFooter>
-      </div>
+      </form>
     </Card>
   )
 }

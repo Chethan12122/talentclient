@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Calendar, MapPin, Clock, Flag, Star, DollarSign } from "lucide-react"
+import { Calendar, MapPin, Clock, Flag, Star, IndianRupee } from "lucide-react"
 
 const matchHistory = [
   {
@@ -12,7 +12,7 @@ const matchHistory = [
     duration: "3.5 hours",
     role: "Head Official",
     teams: ["Springfield High", "Central Academy"],
-    payment: "$140",
+    payment: "740",
     rating: 5.0,
     feedback: "Excellent officiating throughout the event. Professional and decisive.",
     status: "completed",
@@ -27,7 +27,7 @@ const matchHistory = [
     duration: "4 hours",
     role: "Stroke Judge",
     teams: ["Multiple Schools"],
-    payment: "$120",
+    payment: "720",
     rating: 4.8,
     feedback: "Great attention to detail. Caught several technical violations.",
     status: "completed",
@@ -42,7 +42,7 @@ const matchHistory = [
     duration: "2 hours",
     role: "Lead Referee",
     teams: ["Eagles vs Hawks"],
-    payment: "$100",
+    payment: "800",
     rating: 4.9,
     feedback: "Maintained control of a heated game. Fair and consistent calls.",
     status: "completed",
@@ -57,7 +57,7 @@ const matchHistory = [
     duration: "5 hours",
     role: "Field Judge",
     teams: ["Multiple Schools"],
-    payment: "$160",
+    payment: "660",
     rating: 4.7,
     feedback: "Handled field events professionally. Good communication with athletes.",
     status: "completed",
@@ -72,7 +72,7 @@ const matchHistory = [
     duration: "3 hours",
     role: "Timer",
     teams: ["Riverside Prep", "Northside High"],
-    payment: "$80",
+    payment: "570",
     rating: 4.6,
     feedback: "Accurate timing and good coordination with other officials.",
     status: "completed",
@@ -87,7 +87,7 @@ const matchHistory = [
     duration: "2.5 hours",
     role: "Assistant Referee",
     teams: ["Lions vs Tigers"],
-    payment: "$90",
+    payment: "480",
     rating: 4.8,
     feedback: "Solid performance. Good positioning and awareness.",
     status: "completed",
@@ -150,10 +150,10 @@ export default function RefereeHistory() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Earnings</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <IndianRupee className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${monthlyStats.totalEarnings}</div>
+            <div className="text-2xl font-bold">₹{monthlyStats.totalEarnings}</div>
             <p className="text-xs text-muted-foreground">this month</p>
           </CardContent>
         </Card>

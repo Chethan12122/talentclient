@@ -14,7 +14,7 @@ const upcomingMatches = [
     location: "Olympic Stadium, Capital City",
     teams: ["Metro High School", "Central Academy"],
     role: "Head Official",
-    payment: "$150",
+    payment: "750",
     status: "confirmed",
     priority: "high",
     notes: "Championship final - expect large crowd",
@@ -29,7 +29,7 @@ const upcomingMatches = [
     location: "Aquatic Center, Metro City",
     teams: ["Springfield High", "Riverside Prep", "Northside High"],
     role: "Stroke Judge",
-    payment: "$100",
+    payment: "700",
     status: "confirmed",
     priority: "medium",
     notes: "Multi-school event with 150+ participants",
@@ -44,7 +44,7 @@ const upcomingMatches = [
     location: "High School Gymnasium",
     teams: ["Eagles vs Hawks"],
     role: "Lead Referee",
-    payment: "$120",
+    payment: "720",
     status: "pending",
     priority: "medium",
     notes: "Semi-final game - playoff atmosphere",
@@ -59,7 +59,7 @@ const upcomingMatches = [
     location: "University Track Complex",
     teams: ["Multiple Schools"],
     role: "Field Judge",
-    payment: "$180",
+    payment: "780",
     status: "pending",
     priority: "high",
     notes: "Qualifier for state championships",
@@ -136,7 +136,7 @@ export default function RefereeMatches() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$550</div>
+            <div className="text-2xl font-bold">750</div>
             <p className="text-xs text-muted-foreground">this month</p>
           </CardContent>
         </Card>

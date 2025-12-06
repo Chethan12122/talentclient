@@ -10,9 +10,24 @@ const apiClient = axios.create({
 const getClientCookie = (name: string): string | undefined => {
   if (typeof window === 'undefined') return undefined;
   
-  const cookies = document.cookie.split(';');
-  const cookie = cookies.find(c => c.trim().startsWith(`${name}=`));
-  return cookie ? decodeURIComponent(cookie.split('=')[1]) : undefined;
+  try {
+    const cookies = document.cookie.split(';');
+    console.log("🍪 All cookies:", document.cookie);
+    
+    const cookie = cookies.find(c => c.trim().startsWith(`${name}=`));
+    if (cookie) {
+      const value = cookie.split('=').slice(1).join('=');
+      const decodedValue = decodeURIComponent(value);
+      console.log(`🍪 Found ${name} cookie:`, decodedValue.substring(0, 20) + '...');
+      return decodedValue;
+    } else {
+      console.warn(`🍪 Cookie ${name} not found`);
+    }
+  } catch (e) {
+    console.error("Error reading cookie:", e);
+  }
+  
+  return undefined;
 };
 
 // Flag to prevent infinite refresh loops
@@ -36,17 +51,27 @@ const processQueue = (error: any, token: string | null = null) => {
 
 // Request interceptor - adds auth header automatically
 apiClient.interceptors.request.use(
-  (config) => {
+  async (config) => {
     console.log("🔍 Interceptor: Making request to:", config.url);
     
     // Get token from cookies (client-side only)
-    const token = getClientCookie('access_token');
+    let token = getClientCookie('access_token');
+    
+    // If no token, try to get it from cookies-next in client context
+    if (!token && typeof window !== 'undefined') {
+      try {
+        const { getCookie } = await import('cookies-next');
+        token = getCookie('access_token') as string | undefined;
+      } catch (e) {
+        // cookies-next might not work in some contexts
+      }
+    }
     
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
-      console.log("🔍 Interceptor: Added Authorization header");
+      console.log("✅ Interceptor: Added Authorization header");
     } else {
-      console.log("⚠️ Interceptor: No access token found");
+      console.warn("⚠️ Interceptor: No access token found");
     }
     
     return config;
@@ -118,12 +143,13 @@ apiClient.interceptors.response.use(
           document.cookie = 'access_token=; Max-Age=0; path=/';
           document.cookie = 'refresh_token=; Max-Age=0; path=/';
           document.cookie = 'user_role=; Max-Age=0; path=/';
+          document.cookie = 'user_id=; Max-Age=0; path=/';
         }
         
         // Only redirect if we're in a browser environment
-        if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
+        if (typeof window !== 'undefined' && !window.location.pathname.includes('/authpage/login')) {
           console.log("🔄 Redirecting to login page");
-          window.location.href = '/login';
+          window.location.href = '/authpage/login';
         }
         
         return Promise.reject(refreshError);
