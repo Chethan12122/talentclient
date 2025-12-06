@@ -46,60 +46,59 @@ export function QRScanner({ onDetected }: Props) {
   }, [manual, onDetected])
 
 return (
-  <div className="grid gap-4">
-    {/* Responsive QR Scanner - Smaller on mobile */}
-    <div className="w-full rounded-xl border-2 border-dashed border-muted-foreground/50 bg-gradient-to-br from-muted to-background p-3 sm:p-4 shadow-lg">
-      <div className="aspect-[4/3] w-full mx-auto rounded-xl bg-black/20 border-4 border-dashed border-white/30
-        /* Mobile: Smaller */
-        min-h-[260px] max-h-[380px] sm:min-h-[320px] sm:max-h-[480px]">
+  <div className="grid gap-3 sm:gap-4">
+    {/* Bulletproof Responsive QR Scanner */}
+    <div className="w-full rounded-2xl border-2 border-dashed border-muted-foreground/40 bg-gradient-to-br from-muted/50 to-background p-2 sm:p-3 shadow-md">
+      <div className="w-full max-w-[90vw] mx-auto aspect-[4/3] rounded-xl bg-black/10 border-2 border-dashed border-white/20 overflow-hidden">
         <div 
           id="qr-reader" 
-          className="w-full h-full rounded-xl"
+          className="w-full h-[240px] sm:h-[320px] md:h-[380px] rounded-xl bg-black/20"
           style={{ 
-            minHeight: window.innerWidth < 640 ? '260px' : '320px',
-            maxHeight: window.innerWidth < 640 ? '380px' : '480px'
+            minHeight: '240px',
+            maxHeight: '90vh'
           }}
         />
       </div>
     </div>
     
-    {/* Rest stays the same - already responsive */}
-    <div className="p-4 bg-gradient-to-r from-primary/10 to-primary/5 border rounded-xl text-center shadow-sm">
-      <div className="text-base sm:text-lg font-semibold text-primary-foreground mb-1">
-        {status === "starting" ? "🔄 Initializing..." : 
-         status === "scanning" ? "📷 Ready to scan" : "⏸️ Paused"}
+    {/* Responsive Status */}
+    <div className="p-3 sm:p-4 bg-gradient-to-r from-primary/10 to-primary/5 border rounded-xl text-center shadow-sm">
+      <div className="text-sm sm:text-base md:text-lg font-semibold text-primary-foreground mb-1">
+        {status === "starting" ? "🔄 Initializing scanner..." : 
+         status === "scanning" ? "📷 Ready to scan QR code" : "⏸️ Scanner paused"}
       </div>
       <div className="text-xs sm:text-sm text-muted-foreground">
-        {status === "scanning" ? "Hold QR code steady in frame" : "Grant camera permission if prompted"}
+        {status === "scanning" ? "Hold QR code steady • 10-30cm away" : "Allow camera access to start"}
       </div>
     </div>
 
     {error && (
-      <div className="p-3 sm:p-4 bg-destructive/10 border border-destructive/30 rounded-xl text-sm text-destructive font-medium">
+      <div className="p-3 bg-destructive/10 border border-destructive/30 rounded-xl text-sm text-destructive font-medium px-4">
         ⚠️ {error}
       </div>
     )}
 
-    <div className="grid gap-3 p-3 sm:p-4 bg-muted/20 rounded-xl border">
-      <div className="text-sm font-semibold flex items-center gap-2 text-muted-foreground">
-        <span>OR enter manually</span>
-        <span className="px-2 py-1 bg-muted text-xs rounded-full font-mono">
+    {/* Responsive Manual Input */}
+    <div className="grid gap-2 p-3 sm:p-4 bg-muted/20 rounded-xl border">
+      <div className="text-xs sm:text-sm font-semibold flex flex-col sm:flex-row sm:items-center sm:gap-2 text-muted-foreground">
+        <span>OR enter athlete ID manually</span>
+        <span className="px-2 py-0.5 bg-muted text-xs rounded-full font-mono">
           ATH123456
         </span>
       </div>
-      <div className="flex gap-2 sm:gap-3">
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
         <input
           value={manual}
           onChange={(e) => setManual(e.target.value)}
           placeholder="e.g. ATH123456"
-          className="h-12 sm:h-14 flex-1 rounded-xl border-2 bg-background px-4 sm:px-5 text-base sm:text-lg font-medium ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none focus-visible:border-ring"
+          className="h-12 sm:h-14 flex-1 rounded-xl border-2 bg-background px-4 sm:px-5 text-base sm:text-lg font-medium placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none transition-all"
           onKeyDown={(e) => e.key === "Enter" && handleManualSubmit()}
         />
         <button
           type="button"
           onClick={handleManualSubmit}
           disabled={!manual.trim()}
-          className="h-12 sm:h-14 px-6 sm:px-8 rounded-xl bg-primary text-primary-foreground text-base sm:text-lg font-semibold shadow-lg hover:bg-primary/95 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+          className="h-12 sm:h-14 px-6 sm:px-8 rounded-xl bg-primary text-primary-foreground text-sm sm:text-base font-semibold shadow-lg hover:bg-primary/95 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center"
         >
           Add Athlete
         </button>
@@ -107,6 +106,7 @@ return (
     </div>
   </div>
 )
+
 
 
 }
