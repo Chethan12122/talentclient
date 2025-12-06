@@ -45,50 +45,66 @@ export function QRScanner({ onDetected }: Props) {
     }
   }, [manual, onDetected])
 
-  return (
-    <div className="grid gap-3">
-      {/* QR Scanner */}
-      <div className="aspect-video rounded-md border bg-background overflow-hidden">
+return (
+  <div className="grid gap-4">
+    {/* Fixed-size QR Scanner Container */}
+    <div className="w-full rounded-xl border-2 border-dashed border-muted-foreground/50 bg-gradient-to-br from-muted to-background p-4 shadow-lg">
+      <div className="aspect-[4/3] min-h-[320px] max-h-[480px] w-full mx-auto rounded-xl bg-black/20 border-4 border-dashed border-white/30">
         <div 
           id="qr-reader" 
-          className="w-full h-full"
+          className="w-full h-full rounded-xl"
+          style={{ 
+            minHeight: '320px',
+            maxHeight: '480px'
+          }}
         />
       </div>
-      
-      {/* Status */}
-      <div className="p-2 bg-muted/50 rounded-md text-xs text-center text-muted-foreground">
-        {status === "starting" ? "Starting scanner..." : 
-         status === "scanning" ? "📷 Point camera at QR code" : 
-         "Paused"}
-      </div>
-
-      {error && (
-        <div className="p-2 bg-red-50 border border-red-200 rounded-md text-sm text-destructive">
-          {error}
-        </div>
-      )}
-
-      {/* Manual input */}
-      <label className="grid gap-2">
-        <span className="text-sm font-medium">Manual QR / ID</span>
-        <div className="flex gap-2">
-          <input
-            value={manual}
-            onChange={(e) => setManual(e.target.value)}
-            placeholder="e.g. ATH123456"
-            className="h-10 flex-1 rounded-md border bg-background px-3 text-sm"
-            onKeyDown={(e) => e.key === "Enter" && handleManualSubmit()}
-          />
-          <button
-            type="button"
-            onClick={handleManualSubmit}
-            disabled={!manual.trim()}
-            className="h-10 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90"
-          >
-            Add
-          </button>
-        </div>
-      </label>
     </div>
-  )
+    
+    {/* Status - Larger & clearer */}
+    <div className="p-4 bg-gradient-to-r from-primary/10 to-primary/5 border rounded-xl text-center shadow-sm">
+      <div className="text-lg font-semibold text-primary-foreground mb-1">
+        {status === "starting" ? "🔄 Initializing..." : 
+         status === "scanning" ? "📷 Ready to scan" : "⏸️ Paused"}
+      </div>
+      <div className="text-sm text-muted-foreground">
+        {status === "scanning" ? "Hold QR code steady in frame" : "Grant camera permission if prompted"}
+      </div>
+    </div>
+
+    {error && (
+      <div className="p-4 bg-destructive/10 border border-destructive/30 rounded-xl text-sm text-destructive font-medium">
+        ⚠️ {error}
+      </div>
+    )}
+
+    {/* Manual input - Full width */}
+    <div className="grid gap-3 p-4 bg-muted/20 rounded-xl border">
+      <div className="text-sm font-semibold flex items-center gap-2 text-muted-foreground">
+        <span>OR enter manually</span>
+        <span className="px-2 py-1 bg-muted text-xs rounded-full font-mono">
+          ATH123456
+        </span>
+      </div>
+      <div className="flex gap-3">
+        <input
+          value={manual}
+          onChange={(e) => setManual(e.target.value)}
+          placeholder="e.g. ATH123456"
+          className="h-14 flex-1 rounded-xl border-2 bg-background px-5 text-lg font-medium ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none focus-visible:border-ring"
+          onKeyDown={(e) => e.key === "Enter" && handleManualSubmit()}
+        />
+        <button
+          type="button"
+          onClick={handleManualSubmit}
+          disabled={!manual.trim()}
+          className="h-14 px-8 rounded-xl bg-primary text-primary-foreground text-lg font-semibold shadow-lg hover:bg-primary/95 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+        >
+          Add Athlete
+        </button>
+      </div>
+    </div>
+  </div>
+)
+
 }
