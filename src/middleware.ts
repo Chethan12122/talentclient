@@ -17,8 +17,8 @@ export function middleware(request: NextRequest) {
 
   const publicRoutes = ['/authpage/login', '/authpage/signup'];
 
-  // Redirect '/' explicitly to login page
-  if (pathname === '/' || (!isAuthenticated && !publicRoutes.includes(pathname))) {
+  // Redirect unauthenticated users to login for protected routes
+  if (!isAuthenticated && !publicRoutes.includes(pathname) && pathname !== '/') {
     console.log('Middleware: Redirecting to login');
     return NextResponse.redirect(new URL('/authpage/login', request.url));
   }
