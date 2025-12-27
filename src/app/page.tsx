@@ -20,87 +20,59 @@ export default function HomePage() {
       {/* ================= BACKGROUND ANIMATIONS ================= */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
 
-        {/* 🏀 Basketball */}
+        {/* Desktop Animations */}
         {!isMobile && (
-          <div className="absolute top-20 left-10 animate-bounce">
-            <div className="w-16 h-16 bg-orange-500 rounded-full border-4 border-orange-600 opacity-30 shadow-lg" />
-          </div>
-        )}
-
-        {/* ⚽ Soccer Ball */}
-        {!isMobile && (
-          <div className="absolute top-32 right-10 animate-spin" style={{ animationDuration: '6s' }}>
-            <div className="w-14 h-14 bg-black rounded-full opacity-20 relative shadow-lg">
-              <div className="absolute inset-2 border-2 border-white rounded-full" />
-              <div className="absolute top-1 left-1 w-3 h-3 bg-white rounded-full" />
-              <div className="absolute bottom-1 right-1 w-3 h-3 bg-white rounded-full" />
+          <>
+            {/* 🏀 Basketball */}
+            <div className="absolute top-20 left-10 animate-bounce">
+              <div className="w-16 h-16 bg-orange-500 rounded-full border-4 border-orange-600 opacity-30 shadow-lg" />
             </div>
-          </div>
-        )}
 
-        {/* 🎾 Tennis Ball */}
-        {!isMobile && (
-          <div className="absolute bottom-32 left-20 animate-bounce">
-            <div className="w-12 h-12 bg-green-400 rounded-full opacity-30 border-2 border-green-600" />
-          </div>
-        )}
-
-        {/* 🏆 Trophy */}
-        {!isMobile && (
-          <div className="absolute top-40 right-20 animate-pulse">
-            <div className="w-12 h-16 bg-yellow-400 rounded-t-lg opacity-40">
-              <div className="w-8 h-8 bg-yellow-500 rounded-full mx-auto mt-2" />
+            {/* ⚽ Soccer Ball */}
+            <div className="absolute top-32 right-10 animate-spin" style={{ animationDuration: '6s' }}>
+              <div className="w-14 h-14 bg-black rounded-full opacity-20 relative shadow-lg">
+                <div className="absolute inset-2 border-2 border-white rounded-full" />
+                <div className="absolute top-1 left-1 w-3 h-3 bg-white rounded-full" />
+                <div className="absolute bottom-1 right-1 w-3 h-3 bg-white rounded-full" />
+              </div>
             </div>
-          </div>
-        )}
 
-        {/* 🥇 Medal */}
-        {!isMobile && (
-          <div className="absolute top-60 left-1/2 animate-pulse">
-            <div className="w-10 h-10 bg-yellow-300 rounded-full opacity-30 border-2 border-yellow-500" />
-          </div>
-        )}
-
-        {/* 🏃 Athlete */}
-        {!isMobile && (
-          <div className="absolute bottom-40 right-1/3 animate-bounce">
-            <div className="w-4 h-6 bg-green-500 rounded-t relative">
-              <div className="absolute -top-1 left-1 w-2 h-2 bg-green-600 rounded-full" />
-              <div className="absolute -top-3 left-0 w-1 h-2 bg-green-600 rounded-full" />
-              <div className="absolute -top-3 right-0 w-1 h-2 bg-green-600 rounded-full" />
+            {/* 🎾 Tennis Ball */}
+            <div className="absolute bottom-32 left-20 animate-bounce">
+              <div className="w-12 h-12 bg-green-400 rounded-full opacity-30 border-2 border-green-600" />
             </div>
-          </div>
+
+            {/* 🏆 Trophy */}
+            <div className="absolute top-40 right-20 animate-pulse">
+              <div className="w-12 h-16 bg-yellow-400 rounded-t-lg opacity-40">
+                <div className="w-8 h-8 bg-yellow-500 rounded-full mx-auto mt-2" />
+              </div>
+            </div>
+          </>
         )}
 
-        {/* 🏊 Swimming */}
-        {!isMobile && (
-          <div className="absolute top-3/4 left-1/3 animate-pulse">
-            <div className="flex items-center space-x-1">
-              <div className="w-2 h-3 bg-cyan-500 rounded" />
-              <div className="w-4 h-2 bg-cyan-500 rounded-full" />
-              <div className="w-2 h-3 bg-cyan-500 rounded" />
+        {/* ================= MOBILE ANIMATIONS ================= */}
+        {isMobile && (
+          <>
+            {/* 🔵 Floating Dots */}
+            <div className="absolute top-10 left-1/4 animate-bounce-slow">
+              <div className="w-4 h-4 bg-blue-400 rounded-full opacity-40 shadow-sm" />
             </div>
-          </div>
-        )}
+            <div className="absolute top-1/3 right-1/3 animate-bounce-slow delay-150">
+              <div className="w-3 h-3 bg-indigo-400 rounded-full opacity-30 shadow-sm" />
+            </div>
+            <div className="absolute bottom-20 left-1/3 animate-bounce-slow delay-300">
+              <div className="w-5 h-5 bg-purple-400 rounded-full opacity-35 shadow-sm" />
+            </div>
 
-        {/* ⏱ Stopwatch */}
-        {!isMobile && (
-          <div className="absolute top-1/2 left-5 animate-spin" style={{ animationDuration: '4s' }}>
-            <div className="w-8 h-8 bg-gray-600 rounded-full opacity-20 border-2 border-gray-700 relative">
-              <div className="absolute top-1 left-1/2 w-0.5 h-3 bg-red-500 transform -translate-x-1/2 origin-bottom" />
-              <div className="absolute top-1 left-1/2 w-0.5 h-2 bg-black transform -translate-x-1/2 origin-bottom rotate-90" />
+            {/* ✨ Floating Stars */}
+            <div className="absolute top-1/2 right-1/4 animate-pulse-slow">
+              <div className="w-2 h-2 bg-yellow-300 rounded-full opacity-50" />
             </div>
-          </div>
-        )}
-
-        {/* 🏋️ Weight Bar */}
-        {!isMobile && (
-          <div className="absolute top-3/4 right-5 animate-pulse">
-            <div className="w-20 h-1 bg-gray-400 opacity-30 relative">
-              <div className="absolute -left-1 top-1/2 w-2 h-4 bg-gray-500 transform -translate-y-1/2 rounded" />
-              <div className="absolute -right-1 top-1/2 w-2 h-4 bg-gray-500 transform -translate-y-1/2 rounded" />
+            <div className="absolute bottom-1/4 left-1/2 animate-pulse-slow delay-200">
+              <div className="w-2 h-2 bg-yellow-400 rounded-full opacity-50" />
             </div>
-          </div>
+          </>
         )}
       </div>
 
@@ -154,6 +126,29 @@ export default function HomePage() {
           ))}
         </div>
       </section>
+
+      {/* ================= EXTRA ANIMATION CLASSES ================= */}
+      <style jsx>{`
+        @keyframes bounce-slow {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-10px); }
+        }
+        .animate-bounce-slow {
+          animation: bounce-slow 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse-slow {
+          0%, 100% { opacity: 0.5; }
+          50% { opacity: 1; }
+        }
+        .animate-pulse-slow {
+          animation: pulse-slow 2.5s ease-in-out infinite;
+        }
+
+        .delay-150 { animation-delay: 0.15s; }
+        .delay-200 { animation-delay: 0.2s; }
+        .delay-300 { animation-delay: 0.3s; }
+      `}</style>
     </div>
   )
 }
